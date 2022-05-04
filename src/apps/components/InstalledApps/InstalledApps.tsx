@@ -59,21 +59,6 @@ const InstalledApps: React.FC<InstalledAppsProps> = ({
         })}
       />
       <ResponsiveTable>
-        <TableFooter>
-          <TableRow>
-            <TablePagination
-              colSpan={numberOfColumns}
-              settings={settings}
-              hasNextPage={pageInfo && !disabled ? pageInfo.hasNextPage : false}
-              onNextPage={onNextPage}
-              onUpdateListSettings={onUpdateListSettings}
-              hasPreviousPage={
-                pageInfo && !disabled ? pageInfo.hasPreviousPage : false
-              }
-              onPreviousPage={onPreviousPage}
-            />
-          </TableRow>
-        </TableFooter>
         <TableBody>
           {renderCollection(
             appsList,

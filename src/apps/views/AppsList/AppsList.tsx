@@ -1,4 +1,5 @@
 import { useApolloClient } from "@apollo/client";
+import { defaultListSettings } from "@saleor/config";
 import {
   AppDeleteFailedInstallationMutation,
   AppDeleteMutation,
@@ -62,9 +63,11 @@ export const AppsList: React.FC<AppsListProps> = ({ params }) => {
   const notify = useNotifier();
   const intl = useIntl();
   const navigate = useNavigator();
-  const { updateListSettings, settings } = useListSettings(ListViews.APPS_LIST);
   const paginate = usePaginator();
-  const paginationState = createPaginationState(settings?.rowNumber, params);
+  const paginationState = createPaginationState(
+    defaultListSettings[ListViews.APPS_LIST].rowNumber,
+    params
+  );
   const queryVariables = {
     sort: {
       direction: OrderDirection.DESC,
