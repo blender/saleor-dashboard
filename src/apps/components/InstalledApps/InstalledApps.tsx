@@ -6,6 +6,7 @@ import {
   TableRow,
   Typography
 } from "@material-ui/core";
+import Switch from "@material-ui/core/Switch";
 import { appUrl } from "@saleor/apps/urls";
 import CardTitle from "@saleor/components/CardTitle";
 import TablePagination from "@saleor/components/TablePagination";
@@ -15,7 +16,10 @@ import {
   Button,
   DeleteIcon,
   IconButton,
-  ResponsiveTable
+  InfoIcon,
+  PermissionsIcon,
+  ResponsiveTable,
+  Tooltip
 } from "@saleor/macaw-ui";
 import { renderCollection, stopPropagation } from "@saleor/misc";
 import { ListProps } from "@saleor/types";
@@ -24,6 +28,7 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { useStyles } from "../../styles";
+import { AppPermissions } from "../AppPermissions/AppPermissions";
 import AppsSkeleton from "../AppsSkeleton";
 import DeactivatedText from "../DeactivatedText";
 
@@ -49,6 +54,11 @@ const InstalledApps: React.FC<InstalledAppsProps> = ({
   const intl = useIntl();
   const classes = useStyles(props);
 
+  // TODO: Add handler
+  const getHandleToggle = app => e => {
+    // console.log(app);
+  };
+
   return (
     <Card className={classes.apps}>
       <CardTitle
@@ -73,11 +83,6 @@ const InstalledApps: React.FC<InstalledAppsProps> = ({
                     <span data-tc="name" className={classes.appName}>
                       {app.node.name}
                     </span>
-                    {!app.node.isActive && (
-                      <div className={classes.statusWrapper}>
-                        <DeactivatedText />
-                      </div>
-                    )}
                   </TableCell>
                   <TableCell className={classes.colAction}>
                     {app.node.appUrl && (
@@ -88,15 +93,11 @@ const InstalledApps: React.FC<InstalledAppsProps> = ({
                         {app.node.appUrl}
                       </Typography>
                     )}
-                    <Button
-                      onClick={stopPropagation(onRowAboutClick(app.node.id))}
-                    >
-                      <FormattedMessage
-                        id="TBaMo2"
-                        defaultMessage="About"
-                        description="about app"
-                      />
-                    </Button>
+                    <Switch
+                      checked={app.node.isActive}
+                      onChange={getHandleToggle(app)}
+                    />
+                    <AppPermissions permissions={app.node.permissions} />
                     <IconButton
                       variant="secondary"
                       color="primary"
