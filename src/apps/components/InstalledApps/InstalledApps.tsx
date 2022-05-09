@@ -2,25 +2,16 @@ import {
   Card,
   TableBody,
   TableCell,
-  TableFooter,
   TableRow,
   Typography
 } from "@material-ui/core";
 import Switch from "@material-ui/core/Switch";
+import { useAppListContext } from "@saleor/apps/context";
 import { appUrl } from "@saleor/apps/urls";
 import CardTitle from "@saleor/components/CardTitle";
-import TablePagination from "@saleor/components/TablePagination";
 import TableRowLink from "@saleor/components/TableRowLink";
 import { AppsListQuery } from "@saleor/graphql";
-import {
-  Button,
-  DeleteIcon,
-  IconButton,
-  InfoIcon,
-  PermissionsIcon,
-  ResponsiveTable,
-  Tooltip
-} from "@saleor/macaw-ui";
+import { DeleteIcon, IconButton, ResponsiveTable } from "@saleor/macaw-ui";
 import { renderCollection, stopPropagation } from "@saleor/misc";
 import { ListProps } from "@saleor/types";
 import clsx from "clsx";
@@ -30,14 +21,14 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useStyles } from "../../styles";
 import { AppPermissions } from "../AppPermissions/AppPermissions";
 import AppsSkeleton from "../AppsSkeleton";
-import DeactivatedText from "../DeactivatedText";
+
+type App = AppsListQuery["apps"]["edges"][0]["node"];
 
 export interface InstalledAppsProps extends ListProps {
   appsList: AppsListQuery["apps"]["edges"];
   onRemove: (id: string) => void;
   onRowAboutClick: (id: string) => () => void;
 }
-const numberOfColumns = 2;
 
 const InstalledApps: React.FC<InstalledAppsProps> = ({
   appsList,
@@ -53,10 +44,14 @@ const InstalledApps: React.FC<InstalledAppsProps> = ({
 }) => {
   const intl = useIntl();
   const classes = useStyles(props);
+  const { activateApp, deactivateApp } = useAppListContext();
 
-  // TODO: Add handler
-  const getHandleToggle = app => e => {
-    // console.log(app);
+  const getHandleToggle = (app: App) => () => {
+    if (app.isActive) {
+      deactivateApp(app.id);
+    } else {
+      activateApp(app.id);
+    }
   };
 
   return (
@@ -93,10 +88,12 @@ const InstalledApps: React.FC<InstalledAppsProps> = ({
                         {app.node.appUrl}
                       </Typography>
                     )}
-                    <Switch
-                      checked={app.node.isActive}
-                      onChange={getHandleToggle(app)}
-                    />
+                    <span onClick={e => e.stopPropagation()}>
+                      <Switch
+                        checked={app.node.isActive}
+                        onChange={getHandleToggle(app.node)}
+                      />
+                    </span>
                     <AppPermissions permissions={app.node.permissions} />
                     <IconButton
                       variant="secondary"

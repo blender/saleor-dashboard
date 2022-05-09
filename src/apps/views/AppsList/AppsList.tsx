@@ -1,4 +1,7 @@
 import { useApolloClient } from "@apollo/client";
+import AppActivateDialog from "@saleor/apps/components/AppActivateDialog";
+import AppDeactivateDialog from "@saleor/apps/components/AppDeactivateDialog";
+import { AppListContext, AppListContextValues } from "@saleor/apps/context";
 import { defaultListSettings } from "@saleor/config";
 import {
   AppDeleteFailedInstallationMutation,
@@ -9,6 +12,8 @@ import {
   AppTypeEnum,
   JobStatusEnum,
   OrderDirection,
+  useAppActivateMutation,
+  useAppDeactivateMutation,
   useAppDeleteFailedInstallationMutation,
   useAppDeleteMutation,
   useAppRetryInstallMutation,
@@ -148,6 +153,46 @@ export const AppsList: React.FC<AppsListProps> = ({ params }) => {
       }
     }
   });
+  const [activateApp, activateAppResult] = useAppActivateMutation({
+    onCompleted: data => {
+      const errors = data?.appActivate?.errors;
+      if (errors?.length === 0) {
+        notify({
+          status: "success",
+          text: intl.formatMessage(messages.appActivated)
+        });
+        refetch();
+        closeModal();
+      } else {
+        errors.forEach(error =>
+          notify({
+            status: "error",
+            text: getAppErrorMessage(error, intl)
+          })
+        );
+      }
+    }
+  });
+  const [deactivateApp, deactivateAppResult] = useAppDeactivateMutation({
+    onCompleted: data => {
+      const errors = data?.appDeactivate?.errors;
+      if (errors.length === 0) {
+        notify({
+          status: "success",
+          text: intl.formatMessage(messages.appDeactivated)
+        });
+        refetch();
+        closeModal();
+      } else {
+        errors.forEach(error =>
+          notify({
+            status: "error",
+            text: getAppErrorMessage(error, intl)
+          })
+        );
+      }
+    }
+  });
   const [openModal, closeModal] = createDialogActionHandlers<
     AppListUrlDialog,
     AppListUrlQueryParams
@@ -259,6 +304,12 @@ export const AppsList: React.FC<AppsListProps> = ({ params }) => {
     });
   };
 
+  const handleActivateAppConfirm = () =>
+    activateApp({ variables: { id: params.id } });
+
+  const handleDeactivateAppConfirm = () =>
+    deactivateApp({ variables: { id: params.id } });
+
   const onAppInProgressRemove = (data: AppDeleteFailedInstallationMutation) => {
     const errors = data.appDeleteFailedInstallation.errors;
     if (errors.length === 0) {
@@ -280,8 +331,16 @@ export const AppsList: React.FC<AppsListProps> = ({ params }) => {
   const installedApps = data?.apps?.edges;
   const customApps = customAppsData?.apps?.edges;
 
+  const context: AppListContextValues = React.useMemo(
+    () => ({
+      activateApp: id => openModal("app-activate", { id }),
+      deactivateApp: id => openModal("app-deactivate", { id })
+    }),
+    [activateApp, deactivateApp]
+  );
+
   return (
-    <>
+    <AppListContext.Provider value={context}>
       <AppDeleteDialog
         confirmButtonState={deleteAppOpts.status}
         name={getCurrentAppName(
@@ -292,6 +351,20 @@ export const AppsList: React.FC<AppsListProps> = ({ params }) => {
         onConfirm={handleRemoveConfirm}
         type={action === "remove-app" ? "EXTERNAL" : "CUSTOM"}
         open={action === "remove-app" || action === "remove-custom-app"}
+      />
+      <AppActivateDialog
+        confirmButtonState={activateAppResult.status}
+        name={getCurrentAppName(params.id, installedApps)}
+        onClose={closeModal}
+        onConfirm={handleActivateAppConfirm}
+        open={params.action === "app-activate"}
+      />
+      <AppDeactivateDialog
+        confirmButtonState={deactivateAppResult.status}
+        name={getCurrentAppName(params.id, installedApps)}
+        onClose={closeModal}
+        onConfirm={handleDeactivateAppConfirm}
+        open={params.action === "app-deactivate"}
       />
       <AppInProgressDeleteDialog
         confirmButtonState={deleteInProgressAppOpts.status}
@@ -312,7 +385,6 @@ export const AppsList: React.FC<AppsListProps> = ({ params }) => {
         pageInfo={pageInfo}
         onNextPage={loadNextPage}
         onPreviousPage={loadPreviousPage}
-        onUpdateListSettings={updateListSettings}
         onRowAboutClick={id => () => navigate(appDetailsUrl(id))}
         onAppInstallRetry={onAppInstallRetry}
         getCustomAppHref={id => customAppUrl(id)}
@@ -332,7 +404,7 @@ export const AppsList: React.FC<AppsListProps> = ({ params }) => {
           })
         }
       />
-    </>
+    </AppListContext.Provider>
   );
 };
 
