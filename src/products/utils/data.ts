@@ -11,6 +11,7 @@ import {
 import { MetadataFormData } from "@saleor/components/Metadata/types";
 import { SingleAutocompleteChoiceType } from "@saleor/components/SingleAutocompleteSelectField";
 import {
+  AttributeInputTypeEnum,
   ProductDetailsVariantFragment,
   ProductFragment,
   ProductTypeQuery,
@@ -23,6 +24,7 @@ import {
 import { FormsetAtomicData } from "@saleor/hooks/useFormset";
 import { maybe } from "@saleor/misc";
 import { mapEdgesToItems, mapMetadataItemToInput } from "@saleor/utils/maps";
+import { GetRichTextValues } from "@saleor/utils/richText/useMultipleRichText";
 import moment from "moment";
 
 import { ProductStockInput } from "../components/ProductStocks";

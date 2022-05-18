@@ -15,6 +15,7 @@ import {
 import { FormsetAtomicData } from "@saleor/hooks/useFormset";
 import { IconButton, makeStyles } from "@saleor/macaw-ui";
 import { FetchMoreProps } from "@saleor/types";
+import { RichTextGetters } from "@saleor/utils/richText/useMultipleRichText";
 import classNames from "classnames";
 import React from "react";
 import { defineMessages, FormattedMessage, useIntl } from "react-intl";
@@ -47,6 +48,7 @@ export interface AttributesProps extends AttributeRowHandlers {
   >;
   title?: React.ReactNode;
   entityId?: string;
+  richTextGetters: RichTextGetters<string>;
 }
 
 const useStyles = makeStyles(
@@ -123,6 +125,7 @@ const Attributes: React.FC<AttributesProps> = ({
   title,
   onAttributeSelectBlur,
   entityId = "_defaultId",
+  richTextGetters,
   ...props
 }) => {
   const intl = useIntl();
@@ -175,6 +178,7 @@ const Attributes: React.FC<AttributesProps> = ({
                     attributeValues={attributeValues}
                     error={error}
                     onAttributeSelectBlur={onAttributeSelectBlur}
+                    richTextGetters={richTextGetters}
                     {...props}
                   />
                 </React.Fragment>
